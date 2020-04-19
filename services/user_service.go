@@ -7,5 +7,5 @@ import (
 
 func GetUser(id int64) (*domain.User, *util.ResponseError) {
 
-	return domain.GetUser(id)
+	return domain.UserDao.GetUser(id)
 }
