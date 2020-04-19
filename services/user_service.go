@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/golangmicroservice/domain"
-	"github.com/golangmicroservice/util"
+	"github.com/leandrotula/golangmicroservice/domain"
+	"github.com/leandrotula/golangmicroservice/util"
 )
 
 func GetUser(id int64) (*domain.User, *util.ResponseError) {

@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/golangmicroservice/util"
+	"github.com/leandrotula/golangmicroservice/util"
 	"net/http"
 )
 

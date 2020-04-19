@@ -1,6 +1,6 @@
 package main
 
-import "github.com/golangmicroservice/app"
+import "github.com/leandrotula/golangmicroservice/app"
 
 func main() {
 
