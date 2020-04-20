@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/golangmicroservice/controllers"
+	"github.com/leandrotula/golangmicroservice/controllers"
 	"net/http"
 )
 

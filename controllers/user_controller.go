@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
-	"github.com/golangmicroservice/services"
-	"github.com/golangmicroservice/util"
+	"github.com/leandrotula/golangmicroservice/services"
+	"github.com/leandrotula/golangmicroservice/util"
 	"net/http"
 	"strconv"
 )

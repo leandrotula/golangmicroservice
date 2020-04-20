@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/golangmicroservice/util"
+	"github.com/leandrotula/golangmicroservice/util"
 	"net/http"
 )
 
@@ -14,9 +14,24 @@ var (
 			Email:     "test@domain.com",
 		},
 	}
+
+	UserDao userDaoInterface
 )
 
-func GetUser(userId int64)(*User, *util.ResponseError) {
+func init() {
+
+	UserDao = &userDaoImpl{}
+}
+
+type userDaoInterface interface {
+
+	GetUser(userId int64)(*User, *util.ResponseError)
+}
+
+type userDaoImpl struct {
+}
+
+func(u *userDaoImpl) GetUser(userId int64)(*User, *util.ResponseError) {
 
 	user, present := userData[userId]
 
