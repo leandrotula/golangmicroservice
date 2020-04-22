@@ -1,19 +1,18 @@
 package controllers
 
 import (
-	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"github.com/leandrotula/golangmicroservice/services"
 	"github.com/leandrotula/golangmicroservice/util"
 	"net/http"
 	"strconv"
 )
 
-func GetUser(response http.ResponseWriter, request *http.Request) {
+func GetUser(c *gin.Context) {
 
-	id := request.URL.Query().Get("id")
+	id := c.Param("id")
 
 	userId, parserError := strconv.ParseInt(id, 10, 64)
-	response.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	if parserError != nil {
 
@@ -21,10 +20,8 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 			Code:    http.StatusBadRequest,
 			Message: "Could not convert to desired id type",
 		}
-		marshalledError, _ := json.Marshal(responseError)
-		response.WriteHeader(responseError.Code)
-		_, _ = response.Write(marshalledError)
 
+		c.JSON(responseError.Code, responseError)
 		return
 	}
 
@@ -32,14 +29,10 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 
 	if err != nil {
 
-		marshalledError, _ := json.Marshal(err)
-		response.WriteHeader(err.Code)
-		_, _ = response.Write(marshalledError)
-
+		c.JSON(err.Code, err)
 		return
 	}
 
-	resp, _ := json.Marshal(user)
-	_, _ = response.Write(resp)
+	c.JSON(http.StatusOK, user)
 
 }
