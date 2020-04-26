@@ -32,7 +32,7 @@ func CreatePostRepository(accessToken string, request github.CreateRepositoryReq
 
 	case http.StatusInternalServerError:
 		return nil, &github.ErrorResponseGithub{
-			Message: "internal server error",
+			Message: "internal server errorApi",
 			StatusCode: postResponse.StatusCode,
 		}, nil
 

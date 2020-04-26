@@ -36,7 +36,7 @@ func TestCreateInvalidResponse(t *testing.T) {
 	assert.Nil(t, response)
 	assert.Nil(t, invalidResponse)
 	assert.NotNil(t, err)
-	assert.EqualValues(t, "internal server error", err.Message)
+	assert.EqualValues(t, "internal server errorApi", err.Message)
 	assert.EqualValues(t, http.StatusInternalServerError, err.StatusCode)
 
 }
@@ -48,7 +48,7 @@ func TestCreateAndProcessValidResponse(t *testing.T) {
 		HttpMethod: http.MethodPost,
 		Url: "https://api.github.com/user/repos",
 		Response:   &http.Response{
-			Body: ioutil.NopCloser(strings.NewReader("{\"id\":1296269,\"node_id\":\"MDEwOlJlcG9zaXRvcnkxMjk2MjY5\",\"name\":\"Hello-World\",\"full_name\":\"octocat/Hello-World\",\"owner\":{\"login\":\"octocat\",\"id\":1,\"node_id\":\"MDQ6VXNlcjE=\",\"avatar_url\":\"https://github.com/images/error/octocat_happy.gif\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/octocat\",\"html_url\":\"https://github.com/octocat\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"type\":\"User\",\"site_admin\":false}}")),
+			Body: ioutil.NopCloser(strings.NewReader("{\"id\":1296269,\"node_id\":\"MDEwOlJlcG9zaXRvcnkxMjk2MjY5\",\"name\":\"Hello-World\",\"full_name\":\"octocat/Hello-World\",\"owner\":{\"login\":\"octocat\",\"id\":1,\"node_id\":\"MDQ6VXNlcjE=\",\"avatar_url\":\"https://github.com/images/errorApi/octocat_happy.gif\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/octocat\",\"html_url\":\"https://github.com/octocat\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"type\":\"User\",\"site_admin\":false}}")),
 			StatusCode: http.StatusOK,
 		},
 		Err:        nil,
@@ -61,7 +61,7 @@ func TestCreateAndProcessValidResponse(t *testing.T) {
 	assert.EqualValues(t, 1296269, response.ID)
 	assert.EqualValues(t, "MDEwOlJlcG9zaXRvcnkxMjk2MjY5", response.NodeID)
 	assert.EqualValues(t, "Hello-World", response.Name)
-	assert.EqualValues(t, "https://github.com/images/error/octocat_happy.gif", response.Owner.AvatarURL)
+	assert.EqualValues(t, "https://github.com/images/errorApi/octocat_happy.gif", response.Owner.AvatarURL)
 
 }
 
