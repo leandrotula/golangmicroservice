@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/leandrotula/golangmicroservice/src/api/domain/github"
 	"github.com/leandrotula/golangmicroservice/src/api/errorApi"
+	"github.com/leandrotula/golangmicroservice/src/api/provider/environment"
 	"github.com/leandrotula/golangmicroservice/src/api/provider/github_provider"
 	"github.com/leandrotula/golangmicroservice/src/api/repository"
 	"net/http"
@@ -33,8 +34,7 @@ func (op *createRepoImpl) CreateRepo(request *repository.ApiRequest) (*repositor
 
 	req := github.CreateRepositoryRequestGithub{Name: inputName, Description: request.Description}
 
-	//authorizationHeader := environment.RetrieveAuthorizationHeader()
-	authorizationHeader := "6a544c7a2ca60e6d35375a5824a121114d7909b4"
+	authorizationHeader := environment.RetrieveAuthorizationHeader()
 	response, errorResponse, genericError := github_provider.CreatePostRepository(authorizationHeader, req)
 
 	if errorResponse != nil {
