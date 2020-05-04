@@ -62,7 +62,7 @@ func CreatePostRepository(accessToken string, request github.CreateRepositoryReq
 		}
 		return nil,nil, &unprocessableEntity
 
-	case http.StatusOK:
+	case http.StatusCreated:
 		bytes, err := ioutil.ReadAll(postResponse.Body)
 		if err != nil {
 			return nil, &github.ErrorResponseGithub{
