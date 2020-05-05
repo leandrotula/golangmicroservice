@@ -1,6 +1,10 @@
 package errorApi
 
-import "net/http"
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+)
 
 type ApiError interface {
 	Status() int
@@ -57,6 +61,17 @@ func NewApiError(message string, code int) ApiError {
 		ApiMessage: message,
 	}
 
+}
+
+func DeserializeByteResponse(data []byte)(*apiError, error) {
+
+	var apiError apiError
+
+	if err := json.Unmarshal(data, &apiError); err != nil {
+		return nil, errors.New("problem during conversion")
+	}
+
+	return &apiError, nil
 }
 
 
