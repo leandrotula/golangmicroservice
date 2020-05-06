@@ -134,9 +134,7 @@ func (op *createRepoImpl) createSingleRepo(providedRequest repository.ApiRequest
 	req := github.CreateRepositoryRequestGithub{Name: providedRequest.Name,
 		Description: providedRequest.Description}
 
-	//authorizationHeader := environment.RetrieveAuthorizationHeader()
-	authorizationHeader := "42b6fdcf759052d0efa9cdf6f8d359ad2aa3024b"
-
+	authorizationHeader := environment.RetrieveAuthorizationHeader()
 	response, errorResponse, genericError := github_provider.CreatePostRepository(authorizationHeader, req)
 
 	if errorResponse != nil {
