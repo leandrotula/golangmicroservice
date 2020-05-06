@@ -14,7 +14,7 @@ import (
 type createRepoInterface interface {
 
 	CreateRepo(request *repository.ApiRequest) (*repository.ApiResponse, errorApi.ApiError)
-	CreateRepos(request []repository.ApiRequest) (*repository.CreateReposResponse, errorApi.ApiError)
+	CreateRepos(request []repository.ApiRequest) (repository.CreateReposResponse, errorApi.ApiError)
 }
 
 type createRepoImpl struct {}
@@ -63,11 +63,13 @@ func validate(request *repository.ApiRequest) (string, *repository.ApiResponse, 
 	return inputName, nil, nil, false
 }
 
-func (op *createRepoImpl) CreateRepos(requests []repository.ApiRequest) (*repository.CreateReposResponse, errorApi.ApiError) {
+func (op *createRepoImpl) CreateRepos(requests []repository.ApiRequest) (repository.CreateReposResponse, errorApi.ApiError) {
 
 	input := make(chan repository.CreateRepositoriesResponse)
 	output := make(chan repository.CreateReposResponse)
 	var wg sync.WaitGroup
+
+	defer close(output)
 
 	go op.handle(&wg, input, output)
 	for _, r := range requests {
@@ -78,7 +80,26 @@ func (op *createRepoImpl) CreateRepos(requests []repository.ApiRequest) (*reposi
 
 	wg.Wait()
 	close(input)
-	return nil, nil
+
+	finalResult := <- output
+
+	success := 0
+	for _, tmpResult := range finalResult.Results {
+
+		if tmpResult.Response != nil {
+			success ++
+		}
+
+	}
+
+	if success == 0 {
+		finalResult.StatusCode = finalResult.Results[0].Error.Status()
+	} else if success == len(requests) {
+		finalResult.StatusCode = http.StatusCreated
+	} else {
+		finalResult.StatusCode = http.StatusPartialContent
+	}
+	return finalResult, nil
 }
 
 func (op *createRepoImpl) handle(wg *sync.WaitGroup, inChannel chan repository.CreateRepositoriesResponse,
@@ -113,7 +134,9 @@ func (op *createRepoImpl) createSingleRepo(providedRequest repository.ApiRequest
 	req := github.CreateRepositoryRequestGithub{Name: providedRequest.Name,
 		Description: providedRequest.Description}
 
-	authorizationHeader := environment.RetrieveAuthorizationHeader()
+	//authorizationHeader := environment.RetrieveAuthorizationHeader()
+	authorizationHeader := "42b6fdcf759052d0efa9cdf6f8d359ad2aa3024b"
+
 	response, errorResponse, genericError := github_provider.CreatePostRepository(authorizationHeader, req)
 
 	if errorResponse != nil {
@@ -121,6 +144,7 @@ func (op *createRepoImpl) createSingleRepo(providedRequest repository.ApiRequest
 			Response: nil,
 			Error:    errorApi.NewApiError(errorResponse.Message, errorResponse.StatusCode),
 		}
+		return
 	}
 
 	if genericError != nil {
@@ -129,6 +153,7 @@ func (op *createRepoImpl) createSingleRepo(providedRequest repository.ApiRequest
 			Response: nil,
 			Error:    errorApi.NewApiError(genericError.Message, http.StatusBadRequest),
 		}
+		return
 
 	}
 

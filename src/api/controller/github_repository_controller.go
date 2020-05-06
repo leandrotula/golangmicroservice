@@ -52,5 +52,5 @@ func CreateRepos(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, response)
+	c.JSON(response.StatusCode, response)
 }
