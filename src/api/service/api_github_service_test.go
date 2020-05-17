@@ -3,12 +3,14 @@ package service
 import (
 	"errors"
 	"github.com/leandrotula/golangmicroservice/src/api/client"
+	"github.com/leandrotula/golangmicroservice/src/api/errorApi"
 	"github.com/leandrotula/golangmicroservice/src/api/repository"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -220,5 +222,65 @@ func TestCreateSingleRepoOk(t *testing.T) {
 	assert.EqualValues(t, "Hello-World", result.Response.Name)
 	assert.EqualValues(t, 1296269, result.Response.ID)
 	assert.EqualValues(t, "octocat/Hello-World", result.Response.FullName)
+
+}
+
+func TestHandleConcurrentResponseWithError(t *testing.T) {
+
+	var wg sync.WaitGroup
+	input := make(chan repository.CreateRepositoriesResponse)
+	output := make(chan repository.CreateReposResponse)
+
+	service := createRepoImpl{}
+	wg.Add(1)
+
+	go func() {
+		input <- repository.CreateRepositoriesResponse{
+			Response: nil,
+			Error: errorApi.NewInternalErrorFound("Internal server error"),
+		}
+		close(input)
+	}()
+
+
+	go service.handle(&wg, input, output)
+	wg.Wait()
+
+	result := <- output
+	assert.NotNil(t, result)
+	assert.Nil(t, result.Results[0].Response)
+	assert.NotNil(t, result.Results[0].Error)
+
+}
+
+func TestHandleConcurrentSuccessfulResponse(t *testing.T) {
+
+	var wg sync.WaitGroup
+	input := make(chan repository.CreateRepositoriesResponse)
+	output := make(chan repository.CreateReposResponse)
+
+	service := createRepoImpl{}
+	wg.Add(1)
+
+	go func() {
+		input <- repository.CreateRepositoriesResponse{
+			Response: &repository.ApiResponse{
+				ID:       123,
+				Name:     "repo created",
+				FullName: "user repo created",
+			},
+			Error: nil,
+		}
+		close(input)
+	}()
+
+
+	go service.handle(&wg, input, output)
+	wg.Wait()
+
+	result := <- output
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Results[0].Response)
+	assert.Nil(t, result.Results[0].Error)
 
 }
