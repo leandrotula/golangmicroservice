@@ -284,3 +284,123 @@ func TestHandleConcurrentSuccessfulResponse(t *testing.T) {
 	assert.Nil(t, result.Results[0].Error)
 
 }
+
+func TestCreateReposStatusCreated(t *testing.T) {
+
+	client.RestoreMockup()
+	client.AddMockBehavior(client.Mock{
+		Url:        "https://api.github.com/user/repos",
+		HttpMethod: http.MethodPost,
+		Response:   &http.Response{
+			Body: ioutil.NopCloser(strings.NewReader("{\"id\":1296269,\"node_id\":\"MDEwOlJlcG9zaXRvcnkxMjk2MjY5\",\"name\":\"Hello-World\",\"full_name\":\"octocat/Hello-World\",\"owner\":{\"login\":\"octocat\",\"id\":1,\"node_id\":\"MDQ6VXNlcjE=\",\"avatar_url\":\"https://github.com/images/errorApi/octocat_happy.gif\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/octocat\",\"html_url\":\"https://github.com/octocat\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"type\":\"User\",\"site_admin\":false}}")),
+			StatusCode: http.StatusCreated,
+		},
+		Err:        nil,
+	})
+
+	requests := []repository.ApiRequest{
+		{
+			Name:        "test-repo",
+			Description: "test first repo",
+		},
+	}
+
+	response, err := CreateRepoOperation.CreateRepos(requests)
+	assert.Nil(t, err)
+
+	assert.NotNil(t, response)
+	assert.EqualValues(t, response.StatusCode, http.StatusCreated)
+	assert.NotNil(t, response.Results[0].Response)
+	assert.Nil(t, response.Results[0].Error)
+
+}
+
+func TestCreateReposPartialContent(t *testing.T) {
+
+	client.RestoreMockup()
+	client.AddMockBehavior(client.Mock{
+		Url:        "https://api.github.com/user/repos",
+		HttpMethod: http.MethodPost,
+		Response:   &http.Response{
+			Body: ioutil.NopCloser(strings.NewReader("{\"id\":1296269,\"node_id\":\"MDEwOlJlcG9zaXRvcnkxMjk2MjY5\",\"name\":\"Hello-World\",\"full_name\":\"octocat/Hello-World\",\"owner\":{\"login\":\"octocat\",\"id\":1,\"node_id\":\"MDQ6VXNlcjE=\",\"avatar_url\":\"https://github.com/images/errorApi/octocat_happy.gif\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/octocat\",\"html_url\":\"https://github.com/octocat\",\"followers_url\":\"https://api.github.com/users/octocat/followers\",\"following_url\":\"https://api.github.com/users/octocat/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/octocat/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/octocat/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/octocat/subscriptions\",\"organizations_url\":\"https://api.github.com/users/octocat/orgs\",\"repos_url\":\"https://api.github.com/users/octocat/repos\",\"events_url\":\"https://api.github.com/users/octocat/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/octocat/received_events\",\"type\":\"User\",\"site_admin\":false}}")),
+			StatusCode: http.StatusCreated,
+		},
+		Err:        nil,
+	})
+
+	requests := []repository.ApiRequest{
+		{
+			Name:        "test-repo",
+		},
+		{
+			Name:        "",
+		},
+	}
+
+	response, err := CreateRepoOperation.CreateRepos(requests)
+	assert.Nil(t, err)
+
+	for _, tmp := range response.Results {
+
+		if tmp.Error != nil {
+			assert.EqualValues(t, http.StatusBadRequest ,tmp.Error.Status())
+			assert.EqualValues(t, "invalid input name", tmp.Error.Message())
+		} else {
+			assert.NotNil(t, tmp.Response)
+			assert.EqualValues(t, "Hello-World", tmp.Response.Name)
+			assert.EqualValues(t, 1296269, tmp.Response.ID)
+			assert.EqualValues(t, "octocat/Hello-World", tmp.Response.FullName)
+
+		}
+
+	}
+
+	assert.NotNil(t, response)
+
+}
+
+func TestCreateReposWithInvalidReqBody(t *testing.T) {
+
+	requests := []repository.ApiRequest{
+		{
+			Name:        "",
+			Description: "",
+		},
+	}
+
+	response, _ := CreateRepoOperation.CreateRepos(requests)
+	assert.NotNil(t, response.Results[0].Error)
+	assert.Nil(t, response.Results[0].Response)
+	assert.EqualValues(t, response.StatusCode, http.StatusBadRequest)
+
+}
+
+func TestCreateReposWithError(t *testing.T) {
+
+	client.RestoreMockup()
+	client.AddMockBehavior(client.Mock{
+		HttpMethod: http.MethodPost,
+		Url: "https://api.github.com/user/repos",
+		Response:   &http.Response{
+			Body: ioutil.NopCloser(strings.NewReader("{\"message\":\"Requires authentication\",\"documentation_url\":\"https://developer.github.com/v3/repos/#create\"}")),
+			StatusCode: http.StatusUnauthorized,
+		},
+		Err:        nil,
+	})
+
+	requests := []repository.ApiRequest{
+		{
+			Name:        "test-repo",
+			Description: "test first repo",
+		},
+	}
+
+	response, err := CreateRepoOperation.CreateRepos(requests)
+	assert.NotNil(t, response)
+
+	assert.Nil(t, err)
+	assert.EqualValues(t, response.StatusCode, http.StatusUnauthorized)
+	assert.Nil(t, response.Results[0].Response)
+	assert.NotNil(t, response.Results[0].Error)
+
+}
